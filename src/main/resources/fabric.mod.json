@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "visuals",
+  "version": "${version}",
+  "name": "Visuals",
+  "description": "Панель визуалов (Right Shift): HUD, эффекты удара, анимации, без тумана.",
+  "environment": "client",
+  "entrypoints": { "client": ["dev.visuals.VisualsClient"] },
+  "mixins": ["visuals.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.17.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
