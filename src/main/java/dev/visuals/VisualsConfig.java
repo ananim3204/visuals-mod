@@ -3,31 +3,80 @@ package dev.visuals;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 public class VisualsConfig {
     public static VisualsConfig I = new VisualsConfig();
 
-    public boolean showFps = true, showPing = true, showCoords = true;
-    public boolean showHp = true, showTargetHp = true, showFood = true, showArmor = true;
-    public boolean removeFog = false, hitMarker = true, smoothPvp = true;
-    public HitParticle hitParticle = HitParticle.CRIT;
-    public HitSound hitSound = HitSound.DING;
-    public SwingStyle swordSwing = SwingStyle.VANILLA;
-    public SwingStyle toolSwing = SwingStyle.VANILLA;
-    public SwingStyle spearSwing = SwingStyle.VANILLA;
+    // ---- Тема / HUD ----
+    public Accent accent = Accent.BLUE;
+    public HudStyle hudStyle = HudStyle.GLASS;
+    public float hudOpacity = 0.7f;
+    public Map<String, WidgetState> widgets = new HashMap<>();
 
-    public enum HitParticle {
-        OFF("Выкл", null), CRIT("Криты", ParticleTypes.CRIT), MAGIC("Магия", ParticleTypes.ENCHANTED_HIT),
-        HEART("Сердца", ParticleTypes.HEART), FLAME("Огонь", ParticleTypes.FLAME), STAR("Звёзды", ParticleTypes.END_ROD);
-        public final String label; public final ParticleEffect type;
-        HitParticle(String l, ParticleEffect t) { label = l; type = t; }
+    // ---- Эффект на цели ----
+    public boolean targetFx = true;
+    public TargetFx targetFxMode = TargetFx.RINGS;
+    public boolean targetOnlyPlayers = true;
+    public float fxSpeed = 1f;
+    public float fxSize = 1f;
+
+    // ---- Удар ----
+    public HitFx hitFx = HitFx.SPARKS;
+    public int hitFxCount = 18;
+    public boolean damageNumbers = true;
+    public boolean hitMarker = true;
+    public HitSound hitSound = HitSound.DING;
+
+    // ---- Анимации ----
+    public SwingStyle swordSwing = SwingStyle.SLASH;
+    public SwingStyle toolSwing = SwingStyle.CHOP;
+    public SwingStyle spearSwing = SwingStyle.STAB;
+    public SwingStyle otherSwing = SwingStyle.VANILLA;
+    public boolean smoothPvp = true;
+    public float swingSpeed = 1f;
+    public float handX = 0f, handY = 0f, handZ = 0f, handScale = 1f;
+
+    // ---- Мир ----
+    public boolean removeFog = false;
+    public boolean zoom = true;
+    public int zoomFov = 30;
+
+    public static class WidgetState {
+        public boolean on;
+        public float x, y;
+    }
+
+    public enum Accent {
+        BLUE("Синий", 0x4C8DFF), PURPLE("Фиолет", 0xA06BFF), PINK("Розовый", 0xFF5FA2), RED("Красный", 0xFF4D4D),
+        ORANGE("Оранжевый", 0xFF9A3C), GREEN("Зелёный", 0x4DDB7A), CYAN("Бирюза", 0x3CE0E0), WHITE("Белый", 0xE8E8F0),
+        RAINBOW("Радуга", 0xFFFFFF);
+        public final String label; public final int rgb;
+        Accent(String l, int c) { label = l; rgb = c; }
+    }
+
+    public enum HudStyle {
+        GLASS("Стекло"), SOLID("Тёмный"), NONE("Без фона");
+        public final String label;
+        HudStyle(String l) { label = l; }
+    }
+
+    public enum TargetFx {
+        RINGS("Кольца"), HALO("Нимб"), ORBS("Орбы"), SPIRAL("Спираль"), FLOOR("Круг под ногами");
+        public final String label;
+        TargetFx(String l) { label = l; }
+    }
+
+    public enum HitFx {
+        OFF("Выкл"), SPARKS("Искры"), STARS("Звёзды"), SHOCKWAVE("Волна"), SOULS("Души");
+        public final String label;
+        HitFx(String l) { label = l; }
     }
 
     public enum HitSound {
@@ -38,9 +87,37 @@ public class VisualsConfig {
     }
 
     public enum SwingStyle {
-        VANILLA("Ванильная"), SMOOTH("Плавная"), SLASH("Рубящая"), CHOP("Сверху вниз"), STAB("Выпад"), SPIN("Вращение");
+        VANILLA("Ванильная"), SMOOTH("Плавная"), SLASH("Рубящая"), CHOP("Сверху вниз"), STAB("Выпад"), SPIN("Вращение"),
+        WHIP("Хлыст"), ARC("Дуга"), FLIP("Переворот"), PUNCH("Хук");
         public final String label;
         SwingStyle(String l) { label = l; }
+    }
+
+    public WidgetState state(HudWidget w) {
+        WidgetState s = widgets.get(w.id);
+        if (s == null) {
+            s = new WidgetState();
+            s.on = w.defOn; s.x = w.defX; s.y = w.defY;
+            widgets.put(w.id, s);
+        }
+        return s;
+    }
+
+    private void fix() {
+        if (accent == null) accent = Accent.BLUE;
+        if (hudStyle == null) hudStyle = HudStyle.GLASS;
+        if (targetFxMode == null) targetFxMode = TargetFx.RINGS;
+        if (hitFx == null) hitFx = HitFx.SPARKS;
+        if (hitSound == null) hitSound = HitSound.DING;
+        if (swordSwing == null) swordSwing = SwingStyle.SLASH;
+        if (toolSwing == null) toolSwing = SwingStyle.CHOP;
+        if (spearSwing == null) spearSwing = SwingStyle.STAB;
+        if (otherSwing == null) otherSwing = SwingStyle.VANILLA;
+        if (widgets == null) widgets = new HashMap<>();
+        if (swingSpeed < 0.3f) swingSpeed = 1f;
+        if (handScale < 0.3f) handScale = 1f;
+        if (hitFxCount < 1) hitFxCount = 18;
+        if (zoomFov < 10) zoomFov = 30;
     }
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -53,6 +130,7 @@ public class VisualsConfig {
                 if (c != null) I = c;
             }
         } catch (Exception e) { e.printStackTrace(); }
+        I.fix();
         save();
     }
 
