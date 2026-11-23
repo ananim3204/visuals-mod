@@ -43,6 +43,15 @@ public class VisualsConfig {
     public float swingSpeed = 1f;
     public float handX = 0f, handY = 0f, handZ = 0f, handScale = 1f;
 
+    public float swingIntensity = 1f;
+
+    // ---- Косметика ----
+    public boolean jumpWave = true;
+    public Trail trail = Trail.GLOW;
+    public boolean killFx = true;
+    public boolean hurtVignette = true;
+    public boolean lowHpVignette = true;
+
     // ---- Мир ----
     public boolean removeFog = false;
     public boolean zoom = true;
@@ -68,15 +77,23 @@ public class VisualsConfig {
     }
 
     public enum TargetFx {
-        RINGS("Кольца"), HALO("Нимб"), ORBS("Орбы"), SPIRAL("Спираль"), FLOOR("Круг под ногами");
+        RINGS("Кольца"), HALO("Нимб"), ORBS("Орбы"), SPIRAL("Спираль"), FLOOR("Круг под ногами"),
+        ATOM("Атом"), SCANNER("Сканер"), DOME("Купол"), TORNADO("Торнадо"), CROWN("Корона"), CRYSTALS("Кристаллы");
         public final String label;
         TargetFx(String l) { label = l; }
     }
 
     public enum HitFx {
-        OFF("Выкл"), SPARKS("Искры"), STARS("Звёзды"), SHOCKWAVE("Волна"), SOULS("Души");
+        OFF("Выкл"), SPARKS("Искры"), STARS("Звёзды"), SHOCKWAVE("Волна"), SOULS("Души"),
+        SLASH("Разрез"), HEARTS("Сердца"), CONFETTI("Конфетти"), LIGHTNING("Молнии"), NOVA("Взрыв"), PULSE("Пульс");
         public final String label;
         HitFx(String l) { label = l; }
+    }
+
+    public enum Trail {
+        OFF("Выкл"), GLOW("Свечение"), SPARKLE("Звёздочки"), RAINBOW("Радуга");
+        public final String label;
+        Trail(String l) { label = l; }
     }
 
     public enum HitSound {
@@ -88,7 +105,8 @@ public class VisualsConfig {
 
     public enum SwingStyle {
         VANILLA("Ванильная"), SMOOTH("Плавная"), SLASH("Рубящая"), CHOP("Сверху вниз"), STAB("Выпад"), SPIN("Вращение"),
-        WHIP("Хлыст"), ARC("Дуга"), FLIP("Переворот"), PUNCH("Хук");
+        WHIP("Хлыст"), ARC("Дуга"), FLIP("Переворот"), PUNCH("Хук"),
+        SMASH("Сокрушение"), WINDMILL("Мельница"), THROW("Бросок"), CORKSCREW("Штопор");
         public final String label;
         SwingStyle(String l) { label = l; }
     }
@@ -114,6 +132,8 @@ public class VisualsConfig {
         if (spearSwing == null) spearSwing = SwingStyle.STAB;
         if (otherSwing == null) otherSwing = SwingStyle.VANILLA;
         if (widgets == null) widgets = new HashMap<>();
+        if (trail == null) trail = Trail.GLOW;
+        if (swingIntensity < 0.2f) swingIntensity = 1f;
         if (swingSpeed < 0.3f) swingSpeed = 1f;
         if (handScale < 0.3f) handScale = 1f;
         if (hitFxCount < 1) hitFxCount = 18;

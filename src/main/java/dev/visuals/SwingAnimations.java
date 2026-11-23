@@ -43,12 +43,20 @@ public final class SwingAnimations {
         return 1f - inOutCubic((p - 0.48f) / 0.52f);
     }
 
+    /** Профиль для «Сокрушения»: высокий замах и резкий удар вниз. */
+    private static float curveSmash(float p) {
+        if (p < 0.35f) return -0.55f * Ui.ease(p / 0.35f);
+        if (p < 0.55f) return MathHelper.lerp(outCubic((p - 0.35f) / 0.2f), -0.55f, 1f);
+        return 1f - inOutCubic((p - 0.55f) / 0.45f);
+    }
+
     public static void apply(MatrixStack m, Arm arm, float p, SwingStyle style) {
         int side = arm == Arm.RIGHT ? 1 : -1;
         float pi = (float) Math.PI;
-        float a = curve(p);
+        float k = VisualsConfig.I.swingIntensity;
+        float a = curve(p) * k;
         float s = Ui.ease(p);
-        float sin = MathHelper.sin(p * pi);
+        float sin = MathHelper.sin(p * pi) * k;
         switch (style) {
             case SMOOTH -> {
                 m.translate(side * -0.22f * a, 0.08f * a, -0.2f * a);
@@ -97,6 +105,26 @@ public final class SwingAnimations {
                 rz(m, side * -a * 24f);
                 ry(m, side * a * 20f);
                 rx(m, -a * 14f);
+            }
+            case SMASH -> {
+                float b = curveSmash(p) * k;
+                m.translate(0f, -0.25f * b, -0.3f * b);
+                rx(m, -b * 105f);
+                rz(m, side * b * 6f);
+            }
+            case WINDMILL -> {
+                m.translate(0f, 0f, -0.22f * sin);
+                ry(m, side * s * 360f);
+                rx(m, -sin * 25f);
+            }
+            case THROW -> {
+                m.translate(side * -0.1f * a, 0.12f * sin, -0.95f * a);
+                rx(m, -a * 70f);
+                rz(m, side * a * 10f);
+            }
+            case CORKSCREW -> {
+                m.translate(0f, 0f, -0.9f * a);
+                rz(m, side * s * 540f);
             }
             default -> {}
         }

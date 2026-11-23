@@ -36,7 +36,7 @@ public class VisualsScreen extends Screen {
         int height() { return kind == HEADER ? 18 : kind == SWATCH ? 38 : 24; }
     }
 
-    private final String[] tabNames = {"HUD", "Цель", "Удар", "Анимации", "Мир", "Тема"};
+    private final String[] tabNames = {"HUD", "Цель", "Удар", "Косметика", "Анимации", "Мир", "Тема"};
     private final List<List<Row>> tabs = new ArrayList<>();
     private int tab = lastTab;
     private float scroll, scrollT;
@@ -113,6 +113,16 @@ public class VisualsScreen extends Screen {
         hit.add(cycle("Звук удара", "Звук при попадании", () -> c.hitSound, v -> c.hitSound = v, v -> v.label));
         tabs.add(hit);
 
+        List<Row> cs = new ArrayList<>();
+        cs.add(header("Движение"));
+        cs.add(cycle("След за игроком", "Частицы позади при беге", () -> c.trail, v -> c.trail = v, v -> v.label));
+        cs.add(toggle("Волны при прыжке", "Круг на земле при прыжке и приземлении", () -> c.jumpWave, v -> c.jumpWave = v));
+        cs.add(header("Бой"));
+        cs.add(toggle("Эффект убийства", "Взрыв и надпись KILL, когда добил цель", () -> c.killFx, v -> c.killFx = v));
+        cs.add(toggle("Красные края при уроне", "Вспышка по краям экрана, когда бьют тебя", () -> c.hurtVignette, v -> c.hurtVignette = v));
+        cs.add(toggle("Пульс при малом HP", "Края экрана пульсируют, когда HP <= 6", () -> c.lowHpVignette, v -> c.lowHpVignette = v));
+        tabs.add(cs);
+
         List<Row> an = new ArrayList<>();
         an.add(header("Стили взмаха"));
         an.add(cycle("Меч", "Анимация удара мечом", () -> c.swordSwing, v -> c.swordSwing = v, v -> v.label));
@@ -120,6 +130,7 @@ public class VisualsScreen extends Screen {
         an.add(cycle("Копьё / трезубец", "Анимация копья", () -> c.spearSwing, v -> c.spearSwing = v, v -> v.label));
         an.add(cycle("Остальное", "Анимация для прочих предметов и руки", () -> c.otherSwing, v -> c.otherSwing = v, v -> v.label));
         an.add(toggle("Плавность в PvP", "Ванильную анимацию в бою заменить плавной", () -> c.smoothPvp, v -> c.smoothPvp = v));
+        an.add(slider("Сила анимации", "Размах движений", 0.3, 1.6, 0.1, "%.1fx", () -> c.swingIntensity, v -> c.swingIntensity = (float) v));
         an.add(slider("Скорость взмаха", "Больше — быстрее", 0.5, 2.5, 0.1, "%.1fx", () -> c.swingSpeed, v -> c.swingSpeed = (float) v));
         an.add(header("Положение предмета в руке"));
         an.add(slider("Смещение X", "Влево / вправо", -0.5, 0.5, 0.02, "%.2f", () -> c.handX, v -> c.handX = (float) v));
@@ -177,7 +188,7 @@ public class VisualsScreen extends Screen {
 
             // заголовок
             Ui.gradientText(ctx, textRenderer, "VISUALS", wx + 12, wy + 12);
-            Ui.textFlat(ctx, textRenderer, "v1.1", wx + 12, wy + 23, 0xFF666C78);
+            Ui.textFlat(ctx, textRenderer, "v1.2", wx + 12, wy + 23, 0xFF666C78);
 
             // вкладки
             for (int i = 0; i < tabNames.length; i++) {
