@@ -99,6 +99,9 @@ public class HudEditorScreen extends Screen {
             }
         }
 
+        if (mc.player == null) {
+            Ui.ctext(ctx, textRenderer, "Зайди в мир, чтобы двигать виджеты", width / 2, height / 2, 0xFFFFD27F);
+        }
         Ui.ctext(ctx, textRenderer, "Редактор HUD", width / 2, 10, 0xFFFFFFFF);
         Ui.ctext(ctx, textRenderer, "ЛКМ — перетащить   •   ПКМ — вкл/выкл виджет   •   ESC — выйти", width / 2, 22, 0xFFAAAAAA);
 

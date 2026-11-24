@@ -52,7 +52,24 @@ public class VisualsConfig {
     public boolean hurtVignette = true;
     public boolean lowHpVignette = true;
 
+    public Hat hat = Hat.SAMURAI;
+    public float hatScale = 1f;
+    public Pack pack = Pack.NONE;
+    public boolean themedCosmetics = false;
+    public boolean selfFx = false;
+    public float fxQuality = 1f;
+
+    // ---- Зрение ----
+    public boolean fullbright = false;
+    public boolean noBlindness = true;
+    public boolean noDarkness = true;
+    public boolean noNausea = false;
+    public boolean clearLava = true;
+    public boolean clearWater = false;
+    public boolean clearSnow = true;
+
     // ---- Мир ----
+    public boolean customTitle = true;
     public boolean removeFog = false;
     public boolean zoom = true;
     public int zoomFov = 30;
@@ -90,6 +107,20 @@ public class VisualsConfig {
         HitFx(String l) { label = l; }
     }
 
+    public enum Hat {
+        NONE("Нет"), SAMURAI("Шляпа самурая"), WIZARD("Шляпа волшебника"), TOPHAT("Цилиндр"), PARTY("Колпак-праздник"),
+        SANTA("Колпак Санты"), CROWN("Корона"), HALO("Нимб"), CAT_EARS("Кошачьи уши"), HORNS("Рога");
+        public final String label;
+        Hat(String l) { label = l; }
+    }
+
+    public enum Pack {
+        NONE("Нет"), SCHOOL("Школьный рюкзак"), HIKER("Туристический"), JETPACK("Реактивный ранец"),
+        WINGS_ANGEL("Крылья ангела"), WINGS_DEMON("Крылья демона");
+        public final String label;
+        Pack(String l) { label = l; }
+    }
+
     public enum Trail {
         OFF("Выкл"), GLOW("Свечение"), SPARKLE("Звёздочки"), RAINBOW("Радуга");
         public final String label;
@@ -105,7 +136,7 @@ public class VisualsConfig {
 
     public enum SwingStyle {
         VANILLA("Ванильная"), SMOOTH("Плавная"), SLASH("Рубящая"), CHOP("Сверху вниз"), STAB("Выпад"), SPIN("Вращение"),
-        WHIP("Хлыст"), ARC("Дуга"), FLIP("Переворот"), PUNCH("Хук"),
+        WHIP("Хлыст"), ARC("Дуга"), FLIP("Переворот"), PUNCH("Хук"), BLADE("Лезвие"), HAMMER("Молот"),
         SMASH("Сокрушение"), WINDMILL("Мельница"), THROW("Бросок"), CORKSCREW("Штопор");
         public final String label;
         SwingStyle(String l) { label = l; }
@@ -133,6 +164,10 @@ public class VisualsConfig {
         if (otherSwing == null) otherSwing = SwingStyle.VANILLA;
         if (widgets == null) widgets = new HashMap<>();
         if (trail == null) trail = Trail.GLOW;
+        if (hat == null) hat = Hat.SAMURAI;
+        if (pack == null) pack = Pack.NONE;
+        if (hatScale < 0.4f) hatScale = 1f;
+        if (fxQuality < 0.2f) fxQuality = 1f;
         if (swingIntensity < 0.2f) swingIntensity = 1f;
         if (swingSpeed < 0.3f) swingSpeed = 1f;
         if (handScale < 0.3f) handScale = 1f;
@@ -141,12 +176,17 @@ public class VisualsConfig {
     }
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static Path file() { return FabricLoader.getInstance().getConfigDir().resolve("visuals.json"); }
+    private static Path file() { return FabricLoader.getInstance().getConfigDir().resolve("netrixvisual.json"); }
 
     public static void load() {
         try {
-            if (Files.exists(file())) {
-                VisualsConfig c = GSON.fromJson(Files.readString(file()), VisualsConfig.class);
+            Path f = file();
+            if (!Files.exists(f)) {
+                Path old = FabricLoader.getInstance().getConfigDir().resolve("visuals.json");
+                if (Files.exists(old)) f = old;
+            }
+            if (Files.exists(f)) {
+                VisualsConfig c = GSON.fromJson(Files.readString(f), VisualsConfig.class);
                 if (c != null) I = c;
             }
         } catch (Exception e) { e.printStackTrace(); }

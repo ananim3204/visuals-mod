@@ -3,7 +3,7 @@ plugins {
 }
 
 version = project.mod_version
-group = 'dev.netrixvisual'
+group = 'dev.visuals'
 base { archivesName = 'netrixvisual' }
 
 repositories {}

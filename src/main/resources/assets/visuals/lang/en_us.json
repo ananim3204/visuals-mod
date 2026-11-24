@@ -1,5 +1,6 @@
 {
-  "key.visuals.open": "Open Visuals panel",
+  "key.visuals.open": "Open Netrixvisual panel",
+  "key.visuals.night": "Night vision (toggle)",
   "key.visuals.zoom": "Zoom",
-  "key.category.visuals.main": "Visuals"
+  "key.category.netrixvisual.main": "Netrixvisual"
 }

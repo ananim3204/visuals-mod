@@ -122,6 +122,19 @@ public final class SwingAnimations {
                 rx(m, -a * 70f);
                 rz(m, side * a * 10f);
             }
+            case BLADE -> {
+                m.translate(side * -0.3f * a, 0.1f * a, -0.3f * a);
+                rz(m, side * -a * 50f);
+                ry(m, side * s * 180f);
+                rx(m, -a * 20f);
+            }
+            case HAMMER -> {
+                float b = curveSmash(p) * k;
+                m.translate(0f, -0.35f * b, -0.4f * b);
+                rx(m, -b * 120f);
+                ry(m, side * b * 12f);
+                rz(m, side * b * 10f);
+            }
             case CORKSCREW -> {
                 m.translate(0f, 0f, -0.9f * a);
                 rz(m, side * s * 540f);

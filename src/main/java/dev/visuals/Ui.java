@@ -89,13 +89,51 @@ public final class Ui {
         }
     }
 
-    /** Закрашенный круг (глобальная alpha НЕ применяется — для мирового рендера). */
+    private static final float[] DY = {-1f, -0.6f, -0.2f, 0.2f, 0.6f, 1f};
+    private static final float[] DW = {0.6f, 0.92f, 1f, 0.92f, 0.6f};
+
+    /** Быстрый круг (≤5 заливок, глобальная alpha НЕ применяется — для мирового рендера). */
     public static void disc(DrawContext c, int cx, int cy, int r, int col) {
         if ((col >>> 24) == 0) return;
-        for (int dy = -r; dy <= r; dy++) {
-            int half = (int) Math.round(Math.sqrt(Math.max(0, r * r + 0.25 - dy * dy)));
-            c.fill(cx - half, cy + dy, cx + half + 1, cy + dy + 1, col);
+        if (r <= 1) { c.fill(cx - 1, cy - 1, cx + 1, cy + 1, col); return; }
+        if (r == 2) {
+            c.fill(cx - 1, cy - 2, cx + 1, cy + 2, col);
+            c.fill(cx - 2, cy - 1, cx - 1, cy + 1, col);
+            c.fill(cx + 1, cy - 1, cx + 2, cy + 1, col);
+            return;
         }
+        for (int i = 0; i < 5; i++) {
+            int y1 = cy + Math.round(DY[i] * r), y2 = cy + Math.round(DY[i + 1] * r);
+            if (y2 <= y1) y2 = y1 + 1;
+            int w = Math.round(DW[i] * r);
+            c.fill(cx - w, y1, cx + w, y2, col);
+        }
+    }
+
+    /** Граница по высоте для заливки многоугольников (выставляется перед кадром). */
+    public static int clipH = 2000;
+
+    /** Закрашенный треугольник (построчно). Цвет передавать уже с нужной alpha. */
+    public static void tri(DrawContext c, float x1, float y1, float x2, float y2, float x3, float y3, int col) {
+        if ((col >>> 24) == 0) return;
+        float t;
+        if (y1 > y2) { t = y1; y1 = y2; y2 = t; t = x1; x1 = x2; x2 = t; }
+        if (y1 > y3) { t = y1; y1 = y3; y3 = t; t = x1; x1 = x3; x3 = t; }
+        if (y2 > y3) { t = y2; y2 = y3; y3 = t; t = x2; x2 = x3; x3 = t; }
+        int ymin = Math.max(-2, (int) Math.ceil(y1)), ymax = Math.min(clipH + 2, (int) Math.floor(y3));
+        for (int y = ymin; y <= ymax; y++) {
+            float fy = y + 0.5f;
+            float xa = x1 + (x3 - x1) * ((fy - y1) / (y3 - y1 + 1e-6f));
+            float xb = fy < y2 ? x1 + (x2 - x1) * ((fy - y1) / (y2 - y1 + 1e-6f))
+                               : x2 + (x3 - x2) * ((fy - y2) / (y3 - y2 + 1e-6f));
+            int l = (int) Math.floor(Math.min(xa, xb)), r = (int) Math.ceil(Math.max(xa, xb));
+            if (r > l) c.fill(l, y, r, y + 1, col);
+        }
+    }
+
+    public static int shade(int rgb, float f) {
+        int r = Math.min(255, (int) (((rgb >> 16) & 255) * f)), g = Math.min(255, (int) (((rgb >> 8) & 255) * f)), b = Math.min(255, (int) ((rgb & 255) * f));
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
 
     public static void text(DrawContext c, TextRenderer tr, String s, int x, int y, int col) {

@@ -4,11 +4,14 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.option.Perspective;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +54,8 @@ public final class Fx {
     private static long lastNs;
     private static float clock;
     private static final float[] tmp = new float[4];
+    private static int dotCounter;
+    private static float quality = 1f;
     private static boolean wasGround = true;
     private static double lastVy;
 
@@ -129,7 +134,7 @@ public final class Fx {
     // ----------------------------------------------------------------- burst
     private static void spawn(double x, double y, double z, double vx, double vy, double vz,
                               float life, float size, int color, int shape, float drag, float grav) {
-        if (parts.size() > 800) return;
+        if (parts.size() > 250 + (int) (550 * quality)) return;
         P p = new P();
         p.x = x; p.y = y; p.z = z; p.vx = vx; p.vy = vy; p.vz = vz;
         p.life = p.max = life; p.size = size; p.color = color; p.shape = shape; p.drag = drag; p.grav = grav;
@@ -157,7 +162,7 @@ public final class Fx {
         if (c.trail != VisualsConfig.Trail.OFF && !p.isSneaking()) {
             double sp = Math.hypot(p.getVelocity().x, p.getVelocity().z);
             if (sp > 0.08) {
-                for (int i = 0; i < 2; i++) {
+                for (int i = 0; i < 1; i++) {
                     double x = p.getX() + (R.nextDouble() - 0.5) * 0.4, z = p.getZ() + (R.nextDouble() - 0.5) * 0.4;
                     double y = p.getY() + 0.05 + R.nextDouble() * 0.15;
                     switch (c.trail) {
@@ -308,10 +313,11 @@ public final class Fx {
     }
 
     // ----------------------------------------------------------------- камера
-    private static final class Cam {
+    static final class Cam {
         double x, y, z;
         float fx, fy, fz, rx, rz, ux, uy, uz, tanH, aspect;
         int sw, sh;
+        boolean fp = true;
 
         boolean project(double wx, double wy, double wz, float[] o) {
             double dx = wx - x, dy = wy - y, dz = wz - z;
@@ -331,12 +337,28 @@ public final class Fx {
         ClientPlayerEntity p = mc.player;
         Cam c = new Cam();
         Vec3d cp = lerp(camPrev, camCur, pt);
-        c.x = cp.x; c.y = cp.y + (p.getEyeY() - p.getY()); c.z = cp.z;
-        float yaw = p.getYaw() * 0.017453292f, pitch = p.getPitch() * 0.017453292f;
+        double ex = cp.x, ey = cp.y + (p.getEyeY() - p.getY()), ez = cp.z;
+        float yawD = p.getYaw(), pitchD = p.getPitch();
+        Perspective per = mc.options.getPerspective();
+        c.fp = per.isFirstPerson();
+        if (!c.fp && per.isFrontView()) { yawD += 180f; pitchD = -pitchD; }
+        float yaw = yawD * 0.017453292f, pitch = pitchD * 0.017453292f;
         float sy = MathHelper.sin(yaw), cy = MathHelper.cos(yaw), sp = MathHelper.sin(pitch), cpch = MathHelper.cos(pitch);
         c.fx = -sy * cpch; c.fy = -sp; c.fz = cy * cpch;
         c.rx = -cy; c.rz = -sy;
         c.ux = -sy * sp; c.uy = cpch; c.uz = cy * sp;
+        double dist = 0;
+        if (!c.fp) {
+            dist = 4.0;
+            try {
+                Vec3d from = new Vec3d(ex, ey, ez);
+                Vec3d to = new Vec3d(ex - c.fx * 4.0, ey - c.fy * 4.0, ez - c.fz * 4.0);
+                BlockHitResult hit = mc.world.raycast(new RaycastContext(from, to,
+                        RaycastContext.ShapeType.VISUAL, RaycastContext.FluidHandling.NONE, p));
+                dist = Math.max(0.3, hit.getPos().distanceTo(from) - 0.15);
+            } catch (Exception ignored) { }
+        }
+        c.x = ex - c.fx * dist; c.y = ey - c.fy * dist; c.z = ez - c.fz * dist;
         c.sw = mc.getWindow().getScaledWidth();
         c.sh = mc.getWindow().getScaledHeight();
         int fov = mc.options.getFov().getValue();
@@ -373,12 +395,21 @@ public final class Fx {
             f.y += (0.4 + 1.2 * (f.life / f.max)) * dt;
         }
 
-        if (!mc.options.getPerspective().isFirstPerson()) return;
-
         float pt = MathHelper.clamp((now - tickNs) / 50_000_000f, 0f, 1f);
         Cam cam = makeCam(mc, pt);
+        VisualsConfig cfg = VisualsConfig.I;
+        quality = cfg.fxQuality;
+        dotCounter = 0;
+        Ui.clipH = cam.sh;
 
-        if (tgt != null && tAlpha > 0.02f && tPrev != null) drawTarget(ctx, cam, pt, tAlpha);
+        if (tgt != null && tAlpha > 0.02f && tPrev != null) {
+            drawTarget(ctx, cam, lerp(tPrev, tCur, pt), tgt.getWidth(), tgt.getHeight(), tAlpha);
+        }
+        if (!cam.fp) {
+            Vec3d me = lerp(camPrev, camCur, pt);
+            if (cfg.selfFx && cfg.targetFx) drawTarget(ctx, cam, me, 0.6f, 1.8f, 0.9f);
+            Cosmetics.draw(ctx, mc, cam, me, dt, clock);
+        }
 
         for (P p : parts) drawParticle(ctx, cam, p);
 
@@ -395,6 +426,7 @@ public final class Fx {
     // ------------------------------------------------------------- рисование
     private static void glow(DrawContext c, Cam cam, double x, double y, double z, float size, int color, float alpha) {
         if (alpha <= 0.03f) return;
+        if (quality < 0.99f && (dotCounter++ * 37) % 100 >= quality * 100f) return;
         if (!cam.project(x, y, z, tmp)) return;
         int px = Math.round(tmp[0]), py = Math.round(tmp[1]);
         if (px < -20 || py < -20 || px > cam.sw + 20 || py > cam.sh + 20) return;
@@ -407,7 +439,8 @@ public final class Fx {
         }
         Ui.disc(c, px, py, Math.min(16, Math.round(r * 1.8f)), Ui.argb(color, alpha * 0.2f));
         Ui.disc(c, px, py, ri, Ui.argb(color, alpha * 0.85f));
-        Ui.disc(c, px, py, Math.max(1, ri / 2), Ui.argb(0xFFFFFF, alpha * 0.9f));
+        int k = Math.max(1, ri / 3);
+        c.fill(px - k, py - k, px + k, py + k, Ui.argb(0xFFFFFF, alpha * 0.9f));
     }
 
     private static void drawParticle(DrawContext c, Cam cam, P p) {
@@ -447,10 +480,8 @@ public final class Fx {
         }
     }
 
-    private static void drawTarget(DrawContext c, Cam cam, float pt, float al) {
+    private static void drawTarget(DrawContext c, Cam cam, Vec3d pos, float w, float h, float al) {
         VisualsConfig cfg = VisualsConfig.I;
-        Vec3d pos = lerp(tPrev, tCur, pt);
-        float w = tgt.getWidth(), h = tgt.getHeight();
         float t = clock * cfg.fxSpeed, sz = cfg.fxSize;
         switch (cfg.targetFxMode) {
             case RINGS -> rings(c, cam, pos, w, h, t, sz, al);

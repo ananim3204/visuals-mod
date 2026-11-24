@@ -5,8 +5,8 @@
   "name": "Netrixvisual",
   "description": "Netrixvisual: перетаскиваемый HUD, косметика (шапки, рюкзаки, крылья), свои эффекты, ночное зрение, анимации ударов, новое главное меню.",
   "environment": "client",
-  "entrypoints": { "client": ["dev.netrixvisual.VisualsClient"] },
-  "mixins": ["netrixvisual.mixins.json"],
+  "entrypoints": { "client": ["dev.visuals.VisualsClient"] },
+  "mixins": ["visuals.mixins.json"],
   "depends": {
     "fabricloader": ">=0.17.0",
     "minecraft": "~1.21.11",

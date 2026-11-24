@@ -1,5 +1,6 @@
 {
-  "key.visuals.open": "Открыть панель визуалов",
+  "key.visuals.open": "Открыть панель Netrixvisual",
+  "key.visuals.night": "Ночное зрение (вкл/выкл)",
   "key.visuals.zoom": "Зум",
-  "key.category.visuals.main": "Визуалы"
+  "key.category.netrixvisual.main": "Netrixvisual"
 }

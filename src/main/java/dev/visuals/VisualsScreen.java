@@ -36,7 +36,7 @@ public class VisualsScreen extends Screen {
         int height() { return kind == HEADER ? 18 : kind == SWATCH ? 38 : 24; }
     }
 
-    private final String[] tabNames = {"HUD", "Цель", "Удар", "Косметика", "Анимации", "Мир", "Тема"};
+    private final String[] tabNames = {"HUD", "Цель", "Удар", "Косметика", "Зрение", "Анимации", "Мир", "Тема"};
     private final List<List<Row>> tabs = new ArrayList<>();
     private int tab = lastTab;
     private float scroll, scrollT;
@@ -114,6 +114,13 @@ public class VisualsScreen extends Screen {
         tabs.add(hit);
 
         List<Row> cs = new ArrayList<>();
+        cs.add(header("Головной убор"));
+        cs.add(cycle("Шапка", "Видна от 3-го лица (F5)", () -> c.hat, v -> c.hat = v, v -> v.label));
+        cs.add(slider("Размер шапки", "Масштаб головного убора", 0.6, 1.6, 0.05, "%.2f", () -> c.hatScale, v -> c.hatScale = (float) v));
+        cs.add(header("Спина"));
+        cs.add(cycle("Рюкзак / крылья", "Рюкзаки, ранец и крылья на спине", () -> c.pack, v -> c.pack = v, v -> v.label));
+        cs.add(toggle("Цвет по теме", "Красить шапки и рюкзаки в цвет акцента", () -> c.themedCosmetics, v -> c.themedCosmetics = v));
+        cs.add(toggle("Эффект вокруг себя", "Кольца/нимб вокруг тебя в 3-м лице", () -> c.selfFx, v -> c.selfFx = v));
         cs.add(header("Движение"));
         cs.add(cycle("След за игроком", "Частицы позади при беге", () -> c.trail, v -> c.trail = v, v -> v.label));
         cs.add(toggle("Волны при прыжке", "Круг на земле при прыжке и приземлении", () -> c.jumpWave, v -> c.jumpWave = v));
@@ -122,6 +129,20 @@ public class VisualsScreen extends Screen {
         cs.add(toggle("Красные края при уроне", "Вспышка по краям экрана, когда бьют тебя", () -> c.hurtVignette, v -> c.hurtVignette = v));
         cs.add(toggle("Пульс при малом HP", "Края экрана пульсируют, когда HP <= 6", () -> c.lowHpVignette, v -> c.lowHpVignette = v));
         tabs.add(cs);
+
+        List<Row> vs = new ArrayList<>();
+        vs.add(header("Свет"));
+        vs.add(toggle("Ночное зрение (клавиша N)", "Убирает всю тьму, как мод на гамму", () -> c.fullbright, v -> c.fullbright = v));
+        vs.add(header("Дебафы"));
+        vs.add(toggle("Без слепоты", "Слепота не затемняет экран", () -> c.noBlindness, v -> c.noBlindness = v));
+        vs.add(toggle("Без тьмы Вардена", "Эффект «Тьма» не мешает видеть", () -> c.noDarkness, v -> c.noDarkness = v));
+        vs.add(toggle("Без тошноты", "Экран не качается от тошноты и портала", () -> c.noNausea, v -> c.noNausea = v));
+        vs.add(header("Видимость в среде"));
+        vs.add(toggle("Чистая лава", "Видно далеко под лавой", () -> c.clearLava, v -> c.clearLava = v));
+        vs.add(toggle("Чистая вода", "Видно далеко под водой", () -> c.clearWater, v -> c.clearWater = v));
+        vs.add(toggle("Чистый снег", "Видно сквозь сыпучий снег", () -> c.clearSnow, v -> c.clearSnow = v));
+        vs.add(toggle("Убрать туман", "Дальняя видимость без дымки", () -> c.removeFog, v -> c.removeFog = v));
+        tabs.add(vs);
 
         List<Row> an = new ArrayList<>();
         an.add(header("Стили взмаха"));
@@ -142,7 +163,7 @@ public class VisualsScreen extends Screen {
 
         List<Row> wd = new ArrayList<>();
         wd.add(header("Мир"));
-        wd.add(toggle("Убрать туман", "Дальняя видимость без дымки", () -> c.removeFog, v -> c.removeFog = v));
+        wd.add(toggle("Новое главное меню", "Анимированное меню Netrixvisual вместо ванильного", () -> c.customTitle, v -> c.customTitle = v));
         wd.add(toggle("Зум (клавиша C)", "Приближение, пока зажата клавиша", () -> c.zoom, v -> c.zoom = v));
         wd.add(slider("Сила зума (FOV)", "Меньше — сильнее приближение", 10, 70, 1, "%.0f", () -> c.zoomFov, v -> c.zoomFov = (int) v));
         tabs.add(wd);
@@ -150,6 +171,8 @@ public class VisualsScreen extends Screen {
         List<Row> th = new ArrayList<>();
         th.add(header("Тема"));
         th.add(swatches());
+        th.add(header("Производительность"));
+        th.add(slider("Качество эффектов", "Меньше — больше FPS (меньше точек в эффектах)", 0.3, 1.0, 0.05, "%.2f", () -> c.fxQuality, v -> c.fxQuality = (float) v));
         tabs.add(th);
 
         if (tab >= tabs.size()) tab = 0;
@@ -185,14 +208,25 @@ public class VisualsScreen extends Screen {
             Ui.round(ctx, wx, wy, SB, wh, 5, 0xFF0B0D11);
             Ui.rect(ctx, wx + SB - 5, wy, 5, wh, 0xFF0B0D11);
             Ui.rect(ctx, wx + SB, wy + 6, 1, wh - 12, 0x18FFFFFF);
+            for (int x = wx + 5; x < wx + ww - 5; x += 3) {
+                Ui.rect(ctx, x, wy, 3, 1, Ui.accent((x - wx) / (float) ww * 0.6f));
+            }
+            long nowMs = System.currentTimeMillis();
+            for (int i = 0; i < 22; i++) {
+                double rx = Math.abs(Math.sin(i * 12.9898) * 43758.5453) % 1.0, ry = Math.abs(Math.sin(i * 78.233) * 43758.5453) % 1.0;
+                int dx = wx + 4 + (int) (rx * (ww - 8));
+                int dy = wy + wh - 4 - (int) (((ry * wh) + nowMs / (60.0 + i * 7)) % (wh - 8));
+                float tw = 0.25f + 0.35f * (0.5f + 0.5f * (float) Math.sin(nowMs / 400.0 + i));
+                Ui.rect(ctx, dx, dy, 1, 1, Ui.argb(Ui.accent(i * 0.04f) & 0xFFFFFF, tw));
+            }
 
             // заголовок
-            Ui.gradientText(ctx, textRenderer, "VISUALS", wx + 12, wy + 12);
-            Ui.textFlat(ctx, textRenderer, "v1.2", wx + 12, wy + 23, 0xFF666C78);
+            Ui.gradientText(ctx, textRenderer, "NETRIXVISUAL", wx + 10, wy + 12);
+            Ui.textFlat(ctx, textRenderer, "v2.0", wx + 10, wy + 23, 0xFF666C78);
 
             // вкладки
             for (int i = 0; i < tabNames.length; i++) {
-                int ty = wy + 42 + i * 25;
+                int ty = wy + 42 + i * 24;
                 boolean sel = i == tab, hov = in(mx, my, wx + 6, ty, SB - 12, 22);
                 if (sel) {
                     Ui.round(ctx, wx + 6, ty, SB - 12, 22, 4, Ui.argb(Ui.accent(i * 0.08f) & 0xFFFFFF, 0.22f));

@@ -283,6 +283,7 @@ public final class HudWidgets {
             for (StatusEffectInstance e : p.getStatusEffects()) {
                 if (names.size() >= 8) break;
                 var type = e.getEffectType().value();
+                VisualsConfig vc = VisualsConfig.I;
                 names.add(type.getName().getString() + " " + roman(e.getAmplifier() + 1));
                 int sec = e.getDuration() / 20;
                 times.add(e.isInfinite() ? "∞" : sec / 60 + ":" + String.format("%02d", sec % 60));
