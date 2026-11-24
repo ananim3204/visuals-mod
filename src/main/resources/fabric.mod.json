@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "id": "visuals",
+  "id": "netrixvisual",
   "version": "${version}",
-  "name": "Visuals",
-  "description": "Панель визуалов (Right Shift): перетаскиваемый HUD, инвентарь на экране, свои частицы и анимации ударов, зум.",
+  "name": "Netrixvisual",
+  "description": "Netrixvisual: перетаскиваемый HUD, косметика (шапки, рюкзаки, крылья), свои эффекты, ночное зрение, анимации ударов, новое главное меню.",
   "environment": "client",
-  "entrypoints": { "client": ["dev.visuals.VisualsClient"] },
-  "mixins": ["visuals.mixins.json"],
+  "entrypoints": { "client": ["dev.netrixvisual.VisualsClient"] },
+  "mixins": ["netrixvisual.mixins.json"],
   "depends": {
     "fabricloader": ">=0.17.0",
     "minecraft": "~1.21.11",
