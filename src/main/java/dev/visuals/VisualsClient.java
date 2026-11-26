@@ -19,6 +19,7 @@ public class VisualsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         VisualsConfig.load();
+        UiSkin.register();
 
         KeyBinding.Category cat = KeyBinding.Category.create(Identifier.of("netrixvisual", "main"));
         openKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(

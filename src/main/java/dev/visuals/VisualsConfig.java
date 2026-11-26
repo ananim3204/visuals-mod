@@ -70,6 +70,8 @@ public class VisualsConfig {
 
     // ---- Мир ----
     public boolean customTitle = true;
+    public boolean customGui = true;
+    public boolean noFireOverlay = true;
     public boolean removeFog = false;
     public boolean zoom = true;
     public int zoomFov = 30;
@@ -109,7 +111,7 @@ public class VisualsConfig {
 
     public enum Hat {
         NONE("Нет"), SAMURAI("Шляпа самурая"), WIZARD("Шляпа волшебника"), TOPHAT("Цилиндр"), PARTY("Колпак-праздник"),
-        SANTA("Колпак Санты"), CROWN("Корона"), HALO("Нимб"), CAT_EARS("Кошачьи уши"), HORNS("Рога");
+        SANTA("Колпак Санты"), CROWN("Корона"), HALO("Нимб"), CAT_EARS("Кошачьи уши"), HORNS("Рога"), FLOWERS("Цветочный венок");
         public final String label;
         Hat(String l) { label = l; }
     }

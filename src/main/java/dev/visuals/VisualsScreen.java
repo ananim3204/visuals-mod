@@ -141,6 +141,7 @@ public class VisualsScreen extends Screen {
         vs.add(toggle("Чистая лава", "Видно далеко под лавой", () -> c.clearLava, v -> c.clearLava = v));
         vs.add(toggle("Чистая вода", "Видно далеко под водой", () -> c.clearWater, v -> c.clearWater = v));
         vs.add(toggle("Чистый снег", "Видно сквозь сыпучий снег", () -> c.clearSnow, v -> c.clearSnow = v));
+        vs.add(toggle("Без огня на экране", "Горение не закрывает обзор", () -> c.noFireOverlay, v -> c.noFireOverlay = v));
         vs.add(toggle("Убрать туман", "Дальняя видимость без дымки", () -> c.removeFog, v -> c.removeFog = v));
         tabs.add(vs);
 
@@ -163,6 +164,7 @@ public class VisualsScreen extends Screen {
 
         List<Row> wd = new ArrayList<>();
         wd.add(header("Мир"));
+        wd.add(toggle("Стиль интерфейса Minecraft", "Кнопки и края экранов: создание мира, настройки, пауза", () -> c.customGui, v -> c.customGui = v));
         wd.add(toggle("Новое главное меню", "Анимированное меню Netrixvisual вместо ванильного", () -> c.customTitle, v -> c.customTitle = v));
         wd.add(toggle("Зум (клавиша C)", "Приближение, пока зажата клавиша", () -> c.zoom, v -> c.zoom = v));
         wd.add(slider("Сила зума (FOV)", "Меньше — сильнее приближение", 10, 70, 1, "%.0f", () -> c.zoomFov, v -> c.zoomFov = (int) v));
